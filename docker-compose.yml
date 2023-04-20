@@ -1,0 +1,30 @@
+version: '3'
+
+services:
+  web:
+    build: . # use Dockerfile in current directory
+    restart: always
+    ports:
+      # map port 5000 on host to the port 8000 on the docker container. This is also the port number for the django server
+      - "${DOCKER_DJANGO_HOST_PORT}:${DOCKER_DJANGO_PORT}"
+    environment:
+      - DB_HOST=db
+      - DB_PORT=${DOCKER_MONGO_PORT}  
+      - DB_NAME=${DATABASE_NAME}  
+      - DB_USER=${USER}
+      - DB_PASSWORD=${DATABASE_SECRET}  
+    depends_on:
+      - db
+    env_file:
+      - .env
+  db:
+    image: mongo # official mongoDB image for docker
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${DATABASE_SECRET}
+      - MONGO_INITDB_DATABASE=${DATABASE_NAME}
+    ports:
+      - "${DOCKER_MONGO_HOST_PORT}:${DOCKER_MONGO_PORT}" # expose host port and docker port
+    env_file:
+    - .env
